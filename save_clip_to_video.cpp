@@ -168,20 +168,20 @@ int main(int argc, char * argv[])
     }
 
     /* if a specific mcam was chosen, remove the rest form the list */
-    int numMCams = (mcamID == 0) ? myMantis.numMCams : 1;
-    printf("Requesting frames for %d microcameras\n", numMCams);
-    if( mcamID != 0 ){
-        MICRO_CAMERA mcam;
-        for( int i = 0; i < myMantis.numMCams; i++ ){
-            if( mcamList[i].mcamID == mcamID ){
-                mcam = mcamList[i];
-            } else{
-                MICRO_CAMERA mc;
-                mcamList[i] = mc;
-            }
-        }
-        mcamList[0] = mcam;
-    }
+    // int numMCams = (mcamID == 0) ? myMantis.numMCams : 1;
+    // printf("Requesting frames for %d microcameras\n", numMCams);
+    // if( mcamID != 0 ){
+    //     MICRO_CAMERA mcam;
+    //     for( int i = 0; i < myMantis.numMCams; i++ ){
+    //         if( mcamList[i].mcamID == mcamID ){
+    //             mcam = mcamList[i];
+    //         } else{
+    //             MICRO_CAMERA mc;
+    //             mcamList[i] = mc;
+    //         }
+    //     }
+    //     mcamList[0] = mcam;
+    // }
 
     /* Next we calculate the length of a frame in microseconds */
     uint64_t frameLength = (uint64_t)(1.0/framerate * 1e6);
@@ -195,16 +195,20 @@ int main(int argc, char * argv[])
     uint64_t requestCounter = 0;
     uint64_t frameCounter = 0;
 
-    cv::VideoWriter outputVideo;
-    outputVideo.open("test.avi", CV_FOURCC('D','I','V','X'), 30, cv::Size(3840, 2160));
-    if (!outputVideo.isOpened()) {
-        printf("Failed to open file to write!\n");
-        exit(0);
-    }
-    int frameInd = 0;
+    for (int i = 0; i < numMCams; i ++) {
+        cv::VideoWriter outputVideo;
+        char videoName[512];
+        sprintf(videoName, "%s/%u.avi",
+                dir,
+                frame.m_metadata.m_camId);
+        outputVideo.open(videoName, CV_FOURCC('D','I','V','X'), 30, cv::Size(3840, 2160));
+        if (!outputVideo.isOpened()) {
+            printf("Failed to open file to write!\n");
+            exit(0);
+        }
+        int frameInd = 0;
 
-    for( uint64_t t = startTime; t < endTime; t += frameLength ){
-        for( int i = 0; i < numMCams; i++ ){
+        for( uint64_t t = startTime; t < endTime; t += frameLength ){
             /* get the next frame for this mcam */
             printf("%d: Requesting frame for mcam %u\n", frameInd, mcamList[i].mcamID);
             requestCounter++;
@@ -241,7 +245,6 @@ int main(int argc, char * argv[])
                     cv::imwrite(fileName, img);
                 frameInd ++;
                 
-
                 /* return the frame buffer pointer to prevent memory leaks */
                 if( !returnPointer(frame.m_image) ){
                     printf("Failed to return the pointer for the frame buffer\n");
@@ -250,14 +253,13 @@ int main(int argc, char * argv[])
                 printf("Frame request failed!\n");
             }
         }
+        outputVideo.release();
+
+        printf("Received %lu of %lu requested frames across %d microcameras\n",
+            frameCounter,
+            requestCounter,
+            myMantis.numMCams);
     }
-    outputVideo.release();
-
-    printf("Received %lu of %lu requested frames across %d microcameras\n",
-           frameCounter,
-           requestCounter,
-           myMantis.numMCams);
-
     /* Disconnect the cameras to prevent issues when another program 
      * tries to connect */
     for( int i = 0; i < numCameras; i++ ){
