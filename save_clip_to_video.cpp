@@ -191,7 +191,10 @@ int main(int argc, char * argv[])
     uint64_t frameCounter = 0;
 
     cv::VideoWriter outputVideo;
-    outputVideo.open("test.mp4", CV_FOURCC('D','I','V','X'), 30, cv::Size(2160, 3840), true);
+    outputVideo.open("test.avi", CV_FOURCC('D','I','V','X'), 30, cv::Size(2160, 3840));
+
+    // cv::Mat testframe = cv::Mat::ones(2160, 3840, CV_8UC3);
+    // outputVideo << testframe;
 
     for( uint64_t t = startTime; t < endTime; t += frameLength ){
         for( int i = 0; i < numMCams; i++ ){

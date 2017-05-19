@@ -13,7 +13,7 @@ list(APPEND CMAKE_MODULE_PATH
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++11")
 
-# set(OpenCV_DIR /usr/local/share/OpenCV)
+# set(OpenCV_DIR /usr/share/opencv)
 find_package(OpenCV REQUIRED)
 include_directories(include ${OpenCV_INCLUDE_DIR})
 
