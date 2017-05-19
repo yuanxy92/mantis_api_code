@@ -201,11 +201,18 @@ int main(int argc, char * argv[])
         sprintf(videoName, "%s/%u.avi",
                 dir,
                 mcamList[i].mcamID);
-        outputVideo.open(videoName, CV_FOURCC('M','J','P','G'), 30, cv::Size(3840, 2160));
+        outputVideo.open(videoName, CV_FOURCC('D','I','V','3'), 30, cv::Size(3840, 2160), true);
         if (!outputVideo.isOpened()) {
             printf("Failed to open file to write!\n");
             exit(0);
         }
+        char configName[512];
+        sprintf(configName, "%s/%u.txt",
+                dir,
+                mcamList[i].mcamID);
+        FILE *fp;
+        fp = fopen(configName, "w");
+
         int frameInd = 0;
 
         for( uint64_t t = startTime; t < endTime; t += frameLength ){
@@ -217,7 +224,6 @@ int main(int argc, char * argv[])
                                    t,
                                    ATL_TILING_1_1_2,
                                    ATL_TILE_4K);
-
             /* check that the request succeeded before using the frame */
             if( frame.m_image != NULL ){
                 frameCounter++;
@@ -230,30 +236,35 @@ int main(int argc, char * argv[])
                        fileName, 
                        frame.m_metadata.m_camId, 
                        frame.m_metadata.m_timestamp);
-                if (frameInd == 0)
-                    saveMCamFrame(frame, fileName);
+                // if (frameInd == 0)
+                //     saveMCamFrame(frame, fileName);
 
                 // printf("Image size: %u\n", frame.m_metadata.m_size);
                 cv::Mat rawdata(1, frame.m_metadata.m_size, CV_8UC1, (uchar*)frame.m_image);
                 cv::Mat img = cv::imdecode(rawdata, 1);
-                if (frameInd == 0)
-                    cv::imwrite(fileName, img);
+                // if (frameInd == 0)
+                //     cv::imwrite(fileName, img);
                 
                 outputVideo << img;
 
                 // printf("Image information: row: %d, col: %d, filename: %s\n", img.rows, img.cols, fileName);
                 // if (frameInd < 3)
                 //     cv::imwrite(fileName, img);
-                frameInd ++;
+                
                 
                 /* return the frame buffer pointer to prevent memory leaks */
                 if( !returnPointer(frame.m_image) ){
                     printf("Failed to return the pointer for the frame buffer\n");
                 }
             } else{
+                fprintf(fp, "%d\n", frameInd);
                 printf("Frame request failed!\n");
             }
+
+            frameInd ++;
+
         }
+        fclose(fp);
         outputVideo.release();
 
         printf("Received %lu of %lu requested frames across %d microcameras\n",
