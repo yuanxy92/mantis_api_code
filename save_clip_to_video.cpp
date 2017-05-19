@@ -162,6 +162,10 @@ int main(int argc, char * argv[])
     MICRO_CAMERA mcamList[myMantis.numMCams];
     getCameraMCamList(myMantis, mcamList, myMantis.numMCams);
 
+    for( int i = 0; i < myMantis.numMCams; i++ ){
+        printf("found mcam with ID: %u\n", mcamList[i].mcamID);
+    }
+
     /* if a specific mcam was chosen, remove the rest form the list */
     int numMCams = (mcamID == 0) ? myMantis.numMCams : 1;
     printf("Requesting frames for %d microcameras\n", numMCams);
@@ -199,6 +203,7 @@ int main(int argc, char * argv[])
     for( uint64_t t = startTime; t < endTime; t += frameLength ){
         for( int i = 0; i < numMCams; i++ ){
             /* get the next frame for this mcam */
+            printf("Requesting frame for mcam %u", mcamList[i].mcamID);
             requestCounter++;
             FRAME frame = getFrame(myMantis, 
                                    mcamList[i].mcamID,
