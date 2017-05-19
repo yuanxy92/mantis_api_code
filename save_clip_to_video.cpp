@@ -195,12 +195,12 @@ int main(int argc, char * argv[])
     uint64_t requestCounter = 0;
     uint64_t frameCounter = 0;
 
-    for (int i = 0; i < numMCams; i ++) {
+    for (int i = 0; i < myMantis.numMCams; i ++) {
         cv::VideoWriter outputVideo;
         char videoName[512];
         sprintf(videoName, "%s/%u.avi",
                 dir,
-                frame.m_metadata.m_camId);
+                mcamList[i].mcamID);
         outputVideo.open(videoName, CV_FOURCC('D','I','V','X'), 30, cv::Size(3840, 2160));
         if (!outputVideo.isOpened()) {
             printf("Failed to open file to write!\n");
@@ -241,8 +241,8 @@ int main(int argc, char * argv[])
                 outputVideo << img;
 
                 // printf("Image information: row: %d, col: %d, filename: %s\n", img.rows, img.cols, fileName);
-                if (frameInd < 3)
-                    cv::imwrite(fileName, img);
+                // if (frameInd < 3)
+                //     cv::imwrite(fileName, img);
                 frameInd ++;
                 
                 /* return the frame buffer pointer to prevent memory leaks */
