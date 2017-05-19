@@ -14,6 +14,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "mantis/MantisAPI.h"
 
 /**
@@ -186,6 +189,10 @@ int main(int argc, char * argv[])
      * buffer pointer is not NULL before interacting with the frame */
     uint64_t requestCounter = 0;
     uint64_t frameCounter = 0;
+
+    cv::VideoWriter outputVideo;
+    outputVideo.open("test.mp4", CV_FOURCC('D','I','V','X'), 30, cv::Size(2160, 3840), true);
+
     for( uint64_t t = startTime; t < endTime; t += frameLength ){
         for( int i = 0; i < numMCams; i++ ){
             /* get the next frame for this mcam */
@@ -208,7 +215,9 @@ int main(int argc, char * argv[])
                        fileName, 
                        frame.m_metadata.m_camId, 
                        frame.m_metadata.m_timestamp);
-                saveMCamFrame(frame, fileName);
+                // saveMCamFrame(frame, fileName);
+                cv::Mat img(2160, 3840, CV_8UC3, (void*)frame.m_image);
+                outputVideo << img;
 
                 /* return the frame buffer pointer to prevent memory leaks */
                 if( !returnPointer(frame.m_image) ){
@@ -217,9 +226,10 @@ int main(int argc, char * argv[])
             } else{
                 printf("Frame request failed!\n");
             }
-
         }
     }
+    outputVideo.release();
+
     printf("Received %lu of %lu requested frames across %d microcameras\n",
            frameCounter,
            requestCounter,
