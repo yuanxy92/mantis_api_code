@@ -201,7 +201,7 @@ int main(int argc, char * argv[])
         sprintf(videoName, "%s/%u.avi",
                 dir,
                 mcamList[i].mcamID);
-        outputVideo.open(videoName, CV_FOURCC('D','I','V','X'), 30, cv::Size(3840, 2160));
+        outputVideo.open(videoName, CV_FOURCC('M','J','P','G'), 30, cv::Size(3840, 2160));
         if (!outputVideo.isOpened()) {
             printf("Failed to open file to write!\n");
             exit(0);
@@ -230,14 +230,15 @@ int main(int argc, char * argv[])
                        fileName, 
                        frame.m_metadata.m_camId, 
                        frame.m_metadata.m_timestamp);
-                // if (frameInd < 20)
-                //     saveMCamFrame(frame, fileName);
+                if (frameInd == 0)
+                    saveMCamFrame(frame, fileName);
 
                 // printf("Image size: %u\n", frame.m_metadata.m_size);
                 cv::Mat rawdata(1, frame.m_metadata.m_size, CV_8UC1, (uchar*)frame.m_image);
                 cv::Mat img = cv::imdecode(rawdata, 1);
-
-                img.convertTo(img, CV_8UC3);
+                if (frameInd == 0)
+                    cv::imwrite(fileName, img);
+                
                 outputVideo << img;
 
                 // printf("Image information: row: %d, col: %d, filename: %s\n", img.rows, img.cols, fileName);
