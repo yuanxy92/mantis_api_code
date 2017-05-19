@@ -16,6 +16,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/video/video.hpp>
 
 #include "mantis/MantisAPI.h"
 
@@ -195,15 +196,17 @@ int main(int argc, char * argv[])
     uint64_t frameCounter = 0;
 
     cv::VideoWriter outputVideo;
-    outputVideo.open("test.avi", CV_FOURCC('D','I','V','X'), 30, cv::Size(2160, 3840));
-
-    // cv::Mat testframe = cv::Mat::ones(2160, 3840, CV_8UC3);
-    // outputVideo << testframe;
+    outputVideo.open("test.avi", CV_FOURCC('D','I','V','X'), 30, cv::Size(3840, 2160));
+    if (!outputVideo.isOpened()) {
+        printf("Failed to open file to write!\n");
+        exit(0);
+    }
+    int frameInd = 0;
 
     for( uint64_t t = startTime; t < endTime; t += frameLength ){
         for( int i = 0; i < numMCams; i++ ){
             /* get the next frame for this mcam */
-            printf("Requesting frame for mcam %u", mcamList[i].mcamID);
+            printf("%d: Requesting frame for mcam %u\n", frameInd, mcamList[i].mcamID);
             requestCounter++;
             FRAME frame = getFrame(myMantis, 
                                    mcamList[i].mcamID,
@@ -215,7 +218,7 @@ int main(int argc, char * argv[])
             if( frame.m_image != NULL ){
                 frameCounter++;
                 char fileName[512];
-                sprintf(fileName, "%s/%u_%lu",
+                sprintf(fileName, "%s/%u_%lu.jpg",
                         dir,
                         frame.m_metadata.m_camId,
                         frame.m_metadata.m_timestamp);
@@ -223,9 +226,21 @@ int main(int argc, char * argv[])
                        fileName, 
                        frame.m_metadata.m_camId, 
                        frame.m_metadata.m_timestamp);
-                // saveMCamFrame(frame, fileName);
-                cv::Mat img(2160, 3840, CV_8UC3, (void*)frame.m_image);
+                // if (frameInd < 20)
+                //     saveMCamFrame(frame, fileName);
+
+                // printf("Image size: %u\n", frame.m_metadata.m_size);
+                cv::Mat rawdata(1, frame.m_metadata.m_size, CV_8UC1, (uchar*)frame.m_image);
+                cv::Mat img = cv::imdecode(rawdata, 1);
+
+                img.convertTo(img, CV_8UC3);
                 outputVideo << img;
+
+                // printf("Image information: row: %d, col: %d, filename: %s\n", img.rows, img.cols, fileName);
+                if (frameInd < 3)
+                    cv::imwrite(fileName, img);
+                frameInd ++;
+                
 
                 /* return the frame buffer pointer to prevent memory leaks */
                 if( !returnPointer(frame.m_image) ){
