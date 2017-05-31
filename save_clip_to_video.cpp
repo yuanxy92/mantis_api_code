@@ -239,6 +239,8 @@ int main(int argc, char * argv[])
                 // if (frameInd == 0)
                 //     saveMCamFrame(frame, fileName);
 
+                fprintf(fp, "%d\t%u\t%lu\n", frameInd, frame.m_metadata.m_camId, frame.m_metadata.m_timestamp);
+
                 // printf("Image size: %u\n", frame.m_metadata.m_size);
                 cv::Mat rawdata(1, frame.m_metadata.m_size, CV_8UC1, (uchar*)frame.m_image);
                 cv::Mat img = cv::imdecode(rawdata, 1);
@@ -257,7 +259,7 @@ int main(int argc, char * argv[])
                     printf("Failed to return the pointer for the frame buffer\n");
                 }
             } else{
-                fprintf(fp, "%d\n", frameInd);
+                fprintf(fp, "%d\t%u\t%lu\n", frameInd, 0, 0);
                 printf("Frame request failed!\n");
             }
 
