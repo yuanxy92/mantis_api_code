@@ -5,7 +5,7 @@
 #
 
 cmake_minimum_required(VERSION 2.8)
-project( MultiscaleGigaVideo )
+project( mantis_camera_color_correction )
 
 if ( WIN32 )
 	set(OpenCV_DIR "E:/ShaneYuan/lib/opencv/x64/vc12/lib")
@@ -28,10 +28,7 @@ endif()
 include_directories(${EIGEN_INCLUDE_DIR})
 
 file(GLOB HEADERS  *.h *.hpp "${PROJECT_SOURCE_DIR}/common/Global.h")
-set(SRC_LIST "${PROJECT_SOURCE_DIR}/common/Global.cpp" "main.cpp" "GigaVideoIO.cpp"
-"Quad.cpp" "Mesh.cpp" "ASAP.cpp" "ASAPadd.cpp" "ASAPwarp.cpp" "MultiscaleVideoStitcher.cpp"
-"CrossResWarper.cpp" "RelightingInterpolation.cpp" "EdgeAwareInterpolator.cpp" "DeepFlow.cpp"
-"Blender.cpp" ${HEADERS})
+set(SRC_LIST "RelightingInterpolation.cpp" "main.cpp" ${HEADERS})
 
 # OpenMP
 if (WIN32)
@@ -50,6 +47,6 @@ if (UNIX)
     SET(CMAKE_CXX_FLAGS "-std=c++11")
 endif()
 
-add_executable( MultiscaleGigaVideo ${SRC_LIST} )
+add_executable( mantis_camera_color_correction ${SRC_LIST} )
 
-target_link_libraries( MultiscaleGigaVideo ${OpenCV_LIBS} )
+target_link_libraries( mantis_camera_color_correction ${OpenCV_LIBS} )

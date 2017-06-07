@@ -8,12 +8,32 @@
 #ifndef RELIGHTING_INTERPOLATION_H
 #define RELIGHTING_INTERPOLATION_H
 
+#include <stdio.h>
+#include <cstdlib>
+
 // eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues> 
 
-#include "EdgeAwareInterpolator.h"
+// opencv 
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+
+// error code
+class ErrorCode {
+public:
+	static const int YES = 1;
+	static const int NO = 0;
+	static const int RIGHT = 0;
+    static const int EIGEN_SOLVER_ERROR = 2001;
+	static const int FILE_OPEN_SUCESS = 0;
+	static const int FILE_LOAD_FAILED = 1001;
+	static const int UNKNOWN_ERROR = 4001;
+	static const int RANSAC_POINTS_NOT_ENGOUGH = 2001;
+	static const int PROG_EXIT_ABNORMALLY = 1001;
+};
 
 // add definition of vec12f
 namespace cv {
@@ -93,39 +113,6 @@ public:
 	}
 };
 
-typedef struct struct_Superpixel {
-	std::vector<cv::Vec3b> pVal;
-	std::vector<cv::Point2i> pPos;
-	cv::Point2f center;
-	bool update;
-	struct_Superpixel() {
-		pVal.clear(); pPos.clear(); center = cv::Point2f(-1, -1); update = true;
-	}
-	// clear
-	int clear() {
-		pVal.clear(); pPos.clear(); center = cv::Point2f(-1, -1); update = true;
-	}
-	// add pixels
-	int addPixel(cv::Vec3b val, cv::Point2i pos) {
-		pVal.push_back(val);
-		pPos.push_back(pos);
-		update = false;
-		return 0;
-	}
-	// update center
-	cv::Point2f getCenter() {
-		if (update == false) {
-			center = cv::Point2f(0, 0);
-			for (int i = 0; i < pPos.size(); i ++) {
-				center += cv::Point2f(pPos[i].x, pPos[i].y);
-			}
-			center = center / static_cast<float>(pPos.size());
-			update = true;
-		}
-		return center;
-	}
-} Superpixel;
-
 class MKLtransform {
 private:
 	cv::Mat src;
@@ -178,42 +165,6 @@ public:
 	static cv::Mat computeMask(cv::Mat & img, float threshDark, float threshBright);
 	static cv::Mat fusionMask(cv::Mat mask1, cv::Mat mask2);
 	static cv::Mat applyMask(cv::Mat & img, cv::Mat & mask);
-};
-
-class RelightingInterpolation {
-private:
-	cv::Mat src;
-	cv::Mat dst;
-	std::vector<ColorTrans> transform;
-	std::vector<cv::Point2f> samples;
-	cv::Mat mask;
-	cv::Mat srcMask;
-public:
-
-private:
-	// check if the rectangle is valid in mask
-	bool checkMask(cv::Rect rect);
-public:
-	RelightingInterpolation();
-	~RelightingInterpolation();
-
-	// set input
-	int setInput(cv::Mat src, cv::Mat dst);
-	int setInput(cv::Mat src, cv::Mat srcMask, cv::Mat dst, cv::Mat dstMask);
-	// interpolate relighting color transform matrices
-	int interpolate(std::vector<cv::Point2f> samples, std::vector<ColorTrans> colorTrans, std::vector<ColorTrans> & colorTransInter, cv::Mat & labels);
-	// relighting
-	cv::Mat relighting(std::vector<ColorTrans> colorTransInter, cv::Mat labels, int filterPara = 0);
-
-
-	// generate regular samples using regular patches
-	int genRegularSamples(int step, int patchSize, std::vector<cv::Point2f> & samples, std::vector<ColorTrans> & colorTrans);
-	// generate content based samples using superpixels
-	int genSuperPixelSamples(int & labelNum, std::vector<cv::Point2f> & samples, std::vector<ColorTrans> & colorTrans);
-
-	// paper testing only
-	int interpolateBilinear(int step, int patchSize, std::vector<cv::Point2f> samples, std::vector<ColorTrans> colorTrans, cv::Mat inputImg, cv::Mat & outImg);
-	
 };
 
 #endif
