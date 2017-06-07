@@ -117,8 +117,6 @@ class MKLtransform {
 private:
 	cv::Mat src;
 	cv::Mat dst;
-	Superpixel spSrc;
-	Superpixel spDst;
 	bool isSuperpixel;
 public:
 
@@ -132,8 +130,6 @@ protected:
 	// reshape between OpenCV MxNx3 matrix and Eigen (MN - ?) x 3 matrix (discard black pixels)
 	int toEigenMat(cv::Mat refMat, cv::Mat detailMat, Eigen::MatrixXf & refEigen, Eigen::MatrixXf & detailEigen, cv::Mat mask);
 	int toOpenCVMat(cv::Mat refMat, cv::Mat & detailMat, Eigen::MatrixXf refEigen, Eigen::MatrixXf detailEigen, cv::Mat mask);
-	// reshape between superpixel and eigen matrix
-	Eigen::MatrixXf toEigenMat(Superpixel sp);
 	// truncate pixel value to 0 to 1
 	int truncatePixelVal(Eigen::MatrixXf input, Eigen::MatrixXf& output);
 
@@ -153,7 +149,6 @@ public:
 	~MKLtransform();
 	// set input
 	int setInput(cv::Mat src, cv::Mat dst);
-	int setInput(Superpixel spSrc, Superpixel spDst);
 	// mkl transform
 	ColorTrans estimateMKLTransform(int useMask = 0);
 	ColorTrans estimateMKLTransform(cv::Mat mask);

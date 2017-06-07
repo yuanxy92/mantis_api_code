@@ -23,12 +23,6 @@ int MKLtransform::setInput(cv::Mat src, cv::Mat dst) {
 	this->isSuperpixel = false;
 	return ErrorCode::RIGHT;
 }
-int MKLtransform::setInput(Superpixel spSrc, Superpixel spDst) {
-	this->spSrc = spSrc;
-	this->spDst = spDst;
-	this->isSuperpixel = true;
-	return ErrorCode::RIGHT;
-}
 
 // utility function
 /**
@@ -152,25 +146,6 @@ Eigen::MatrixXf MKLtransform::toEigenMat(cv::Mat input) {
 	return output;
 }
 
-/**
-* @brief reshape Superpixel data to Eigen (MN) x 3 matrix
-* @praram Superpixel sp: superpixel data
-* @return Eigen::MatrixXf: output corresponding eigen matrix
-*/
-Eigen::MatrixXf MKLtransform::toEigenMat(Superpixel sp) {
-	Eigen::MatrixXf output;
-	int len = sp.pVal.size();
-	output.resize(len, 3);
-	int index = 0;
-	for (int i = 0; i < len; i++) {
-		cv::Vec3b val = sp.pVal[i];
-		output(index, 0) = static_cast<float>(val.val[0]) / RELIGHTING_MAX_PIXEL_VALUE;
-		output(index, 1) = static_cast<float>(val.val[1]) / RELIGHTING_MAX_PIXEL_VALUE;
-		output(index, 2) = static_cast<float>(val.val[2]) / RELIGHTING_MAX_PIXEL_VALUE;
-		index++;
-	}
-	return output;
-}
 
 /**
 * @brief reshape OpenCV MxNx3 matrix to Eigen (MN) x 3 matrix
@@ -426,8 +401,6 @@ ColorTrans MKLtransform::estimateMKLTransform(int useMask /* = 1 */) {
 		}
 	}
 	else {
-		srcMat = toEigenMat(spSrc);
-		tarMat = toEigenMat(spDst);
 	}
 	Eigen::MatrixXf meanVecSrc, zeroMeanMatSrc, covMatSrc;
 	Eigen::MatrixXf meanVecTar, zeroMeanMatTar, covMatTar;
